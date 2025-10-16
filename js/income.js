@@ -64,7 +64,7 @@ const Income = {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
             const formData = {
-                id: existingIncome ? existingIncome.id : Date.now(),
+                id: existingIncome ? existingIncome.id : null, // ID will be generated in add()
                 date: document.getElementById('incomeDate').value,
                 description: document.getElementById('incomeDescription').value,
                 category: document.getElementById('incomeCategory').value,
@@ -85,6 +85,8 @@ const Income = {
 
     // Add income
     add(income) {
+        // Generate a more robust ID
+        income.id = Date.now() + Math.random().toString(36).substr(2, 9);
         this.incomeList.push(income);
         this.save();
         this.render();
@@ -129,30 +131,62 @@ const Income = {
 
         tbody.innerHTML = this.incomeList
             .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .map(income => `
-                <tr>
+            .map(income => {
+                const safeIncome = {
+                    id: income.id,
+                    date: income.date,
+                    description: this.escapeHtml(income.description),
+                    category: this.escapeHtml(income.category),
+                    amount: income.amount
+                };
+                return `
+                <tr data-id="${income.id}">
                     <td>${this.formatDate(income.date)}</td>
-                    <td>${income.description}</td>
-                    <td>${income.category}</td>
+                    <td>${safeIncome.description}</td>
+                    <td>${safeIncome.category}</td>
                     <td>$${income.amount.toFixed(2)}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-small btn-secondary" onclick="Income.showAddForm(${JSON.stringify(income).replace(/"/g, '&quot;')})">
+                            <button class="btn btn-small btn-secondary edit-income-btn" data-id="${income.id}">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn btn-small btn-danger" onclick="Income.delete(${income.id})">
+                            <button class="btn btn-small btn-danger delete-income-btn" data-id="${income.id}">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
+        
+        // Add event listeners for edit and delete buttons
+        tbody.querySelectorAll('.edit-income-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                const income = this.incomeList.find(i => i.id === id);
+                if (income) this.showAddForm(income);
+            });
+        });
+        
+        tbody.querySelectorAll('.delete-income-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.getAttribute('data-id');
+                this.delete(id);
+            });
+        });
     },
 
     // Format date for display
     formatDate(dateString) {
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    },
+
+    // Escape HTML to prevent XSS
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     },
 
     // Get total income for current month
