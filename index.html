@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Accounting - Account Management</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-calculator"></i>
+                    <h1>Simple Accounting</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="syncBtn" class="btn btn-primary" title="Sync with Google Sheets">
+                        <i class="fas fa-sync"></i> Sync
+                    </button>
+                    <button id="settingsBtn" class="btn btn-secondary" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="app-nav">
+            <ul class="nav-list">
+                <li class="nav-item active" data-view="dashboard">
+                    <i class="fas fa-home"></i> Dashboard
+                </li>
+                <li class="nav-item" data-view="income">
+                    <i class="fas fa-arrow-up"></i> Income
+                </li>
+                <li class="nav-item" data-view="expenses">
+                    <i class="fas fa-arrow-down"></i> Expenses
+                </li>
+                <li class="nav-item" data-view="invoices">
+                    <i class="fas fa-file-invoice"></i> Invoices
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view active">
+                <h2>Dashboard</h2>
+                <div class="summary-cards">
+                    <div class="summary-card income-card">
+                        <div class="card-icon">
+                            <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Income</h3>
+                            <p class="card-amount" id="totalIncome">$0.00</p>
+                            <span class="card-period">This month</span>
+                        </div>
+                    </div>
+                    <div class="summary-card expense-card">
+                        <div class="card-icon">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Total Expenses</h3>
+                            <p class="card-amount" id="totalExpenses">$0.00</p>
+                            <span class="card-period">This month</span>
+                        </div>
+                    </div>
+                    <div class="summary-card profit-card">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Net Profit</h3>
+                            <p class="card-amount" id="netProfit">$0.00</p>
+                            <span class="card-period">This month</span>
+                        </div>
+                    </div>
+                    <div class="summary-card invoice-card">
+                        <div class="card-icon">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Pending Invoices</h3>
+                            <p class="card-amount" id="pendingInvoices">0</p>
+                            <span class="card-period">Awaiting payment</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-activity">
+                    <h3>Recent Transactions</h3>
+                    <div id="recentTransactions" class="transaction-list">
+                        <p class="empty-state">No recent transactions</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Income View -->
+            <section id="income-view" class="view">
+                <div class="view-header">
+                    <h2>Income</h2>
+                    <button id="addIncomeBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Income
+                    </button>
+                </div>
+                <div id="incomeList" class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incomeTableBody">
+                            <tr class="empty-row">
+                                <td colspan="5">No income records found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Expenses View -->
+            <section id="expenses-view" class="view">
+                <div class="view-header">
+                    <h2>Expenses</h2>
+                    <button id="addExpenseBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Expense
+                    </button>
+                </div>
+                <div id="expenseList" class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTableBody">
+                            <tr class="empty-row">
+                                <td colspan="5">No expense records found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Invoices View -->
+            <section id="invoices-view" class="view">
+                <div class="view-header">
+                    <h2>Invoices</h2>
+                    <button id="addInvoiceBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Create Invoice
+                    </button>
+                </div>
+                <div id="invoiceList" class="data-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceTableBody">
+                            <tr class="empty-row">
+                                <td colspan="7">No invoices found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Forms -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Entry</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Form will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Settings</h3>
+                <button class="modal-close" id="settingsClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h4>Google Sheets Integration</h4>
+                    <div class="form-group">
+                        <label for="spreadsheetId">Spreadsheet ID</label>
+                        <input type="text" id="spreadsheetId" class="form-input" placeholder="Enter your Google Sheets ID">
+                        <small>Find this in your Google Sheets URL</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="apiKey">API Key</label>
+                        <input type="password" id="apiKey" class="form-input" placeholder="Enter your Google API Key">
+                        <small>Create an API key in Google Cloud Console</small>
+                    </div>
+                    <button id="saveSettings" class="btn btn-primary">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="js/config.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/googleSheets.js"></script>
+    <script src="js/income.js"></script>
+    <script src="js/expenses.js"></script>
+    <script src="js/invoices.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
