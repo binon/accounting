@@ -22,7 +22,7 @@ const GoogleSheets = {
     // Fetch data from a sheet
     async fetchSheet(sheetName, range = 'A:Z') {
         if (!this.isConfigured()) {
-            throw new Error('Google Sheets not configured. Please add your Spreadsheet ID and API Key in Settings.');
+            throw new Error('Google Sheets not configured. Please add your Spreadsheet ID and API Key in config.js.');
         }
 
         try {
