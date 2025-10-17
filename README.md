@@ -135,7 +135,9 @@ accounting/
 
 If you see an error like "Access to fetch has been blocked by CORS policy", this means your Google Apps Script is not properly configured for cross-origin requests.
 
-**Solution:**
+**📖 [Complete CORS Setup Guide](docs/CORS-SETUP-GUIDE.md)** - Read this for detailed step-by-step instructions.
+
+**Quick Solution:**
 
 1. **Update your Google Apps Script:**
    - Open your Google Sheet
