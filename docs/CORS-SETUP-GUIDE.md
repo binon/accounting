@@ -75,11 +75,15 @@ function doPost(e) {
 }
 
 function createResponse(success, message, data = null) {
+  const response = { success, message, timestamp: new Date().toISOString() };
+  if (data !== null) response.data = data;
+  
   return ContentService
     .createTextOutput(JSON.stringify(response))
     .setMimeType(ContentService.MimeType.JSON);
-  // ❌ No CORS headers
+  // ❌ No CORS headers - browser blocks cross-origin requests
 }
+// ❌ No doOptions() function - preflight requests fail
 ```
 
 ### New Script (With CORS Support)
@@ -128,10 +132,10 @@ function createCorsResponse() {
 If you want to restrict access to only your GitHub Pages site:
 
 ```javascript
-// In createResponse() and createCorsResponse(), change:
+// BEFORE (allows all domains):
 .setHeader('Access-Control-Allow-Origin', '*')
 
-// To:
+// AFTER (only your domain):
 .setHeader('Access-Control-Allow-Origin', 'https://yourusername.github.io')
 ```
 
@@ -167,14 +171,27 @@ For production use, consider:
 - Try in an incognito/private window
 - Hard refresh with Ctrl+F5 (or Cmd+Shift+R on Mac)
 
-### Testing in Apps Script Editor
+### Testing CORS Headers
 
-You can test if CORS headers are working:
+You can verify if CORS headers are working using browser developer tools:
 
-1. Go to https://www.webpagetest.org/
-2. Enter your Web App URL
-3. Run the test
-4. Check the response headers for `Access-Control-Allow-Origin`
+1. Open your app in Chrome/Firefox
+2. Open Developer Tools (F12)
+3. Go to the Network tab
+4. Try adding an income entry
+5. Look for the request to your Web App URL
+6. Check the response headers for `Access-Control-Allow-Origin`
+
+Or test with curl:
+```bash
+curl -I -X OPTIONS https://your-web-app-url/exec
+```
+
+Look for headers like:
+```
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, OPTIONS
+```
 
 ### Common Mistakes
 
