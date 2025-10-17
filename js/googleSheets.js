@@ -1,6 +1,7 @@
 // Google Sheets Integration Manager
 const GoogleSheets = {
     settings: null,
+    AMOUNT_EPSILON: 0.01, // Tolerance for comparing monetary amounts
 
     // Initialize with settings
     init() {
@@ -98,11 +99,20 @@ const GoogleSheets = {
 
     // Merge local and remote data, preserving local items and adding new remote items
     mergeData(localData, remoteData, type) {
+        // Validate inputs
+        if (!Array.isArray(localData) || !Array.isArray(remoteData)) {
+            console.warn('Invalid data provided to mergeData, using empty arrays as fallback');
+            return Array.isArray(localData) ? [...localData] : (Array.isArray(remoteData) ? [...remoteData] : []);
+        }
+        
         // Start with a copy of local data to preserve all local changes
         const merged = [...localData];
         
         // Add remote items that don't already exist locally
         remoteData.forEach(remoteItem => {
+            // Skip invalid items
+            if (!remoteItem) return;
+            
             // Check if this item already exists locally (match by content, not ID)
             const isDuplicate = localData.some(localItem => {
                 return this.itemsMatch(localItem, remoteItem, type);
@@ -119,6 +129,11 @@ const GoogleSheets = {
 
     // Check if two items match (same data, excluding ID)
     itemsMatch(item1, item2, type) {
+        // Validate inputs
+        if (!item1 || !item2) {
+            return false;
+        }
+        
         switch (type) {
             case 'income':
             case 'expenses':
@@ -126,7 +141,7 @@ const GoogleSheets = {
                 return item1.date === item2.date &&
                        item1.description === item2.description &&
                        item1.category === item2.category &&
-                       Math.abs(item1.amount - item2.amount) < 0.01; // Use epsilon for float comparison
+                       Math.abs(item1.amount - item2.amount) < this.AMOUNT_EPSILON;
             
             case 'invoices':
                 // Match by invoice number, client, dates, and amount
@@ -134,7 +149,7 @@ const GoogleSheets = {
                        item1.client === item2.client &&
                        item1.date === item2.date &&
                        item1.duedate === item2.duedate &&
-                       Math.abs(item1.amount - item2.amount) < 0.01;
+                       Math.abs(item1.amount - item2.amount) < this.AMOUNT_EPSILON;
             
             default:
                 return false;
