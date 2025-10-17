@@ -68,18 +68,21 @@ const GoogleSheets = {
         try {
             // Fetch income data
             const incomeData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.INCOME);
-            const income = incomeData.length > 1 ? this.parseSheetData(incomeData, 'income') : [];
-            Storage.saveIncome(income);
+            const remoteIncome = incomeData.length > 1 ? this.parseSheetData(incomeData, 'income') : [];
+            const mergedIncome = this.mergeData(Storage.getIncome(), remoteIncome, 'income');
+            Storage.saveIncome(mergedIncome);
 
             // Fetch expenses data
             const expensesData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.EXPENSES);
-            const expenses = expensesData.length > 1 ? this.parseSheetData(expensesData, 'expenses') : [];
-            Storage.saveExpenses(expenses);
+            const remoteExpenses = expensesData.length > 1 ? this.parseSheetData(expensesData, 'expenses') : [];
+            const mergedExpenses = this.mergeData(Storage.getExpenses(), remoteExpenses, 'expenses');
+            Storage.saveExpenses(mergedExpenses);
 
             // Fetch invoices data
             const invoicesData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.INVOICES);
-            const invoices = invoicesData.length > 1 ? this.parseSheetData(invoicesData, 'invoices') : [];
-            Storage.saveInvoices(invoices);
+            const remoteInvoices = invoicesData.length > 1 ? this.parseSheetData(invoicesData, 'invoices') : [];
+            const mergedInvoices = this.mergeData(Storage.getInvoices(), remoteInvoices, 'invoices');
+            Storage.saveInvoices(mergedInvoices);
 
             // Update last sync time
             const settings = Storage.getSettings();
@@ -90,6 +93,51 @@ const GoogleSheets = {
         } catch (error) {
             console.error('Error syncing from sheets:', error);
             throw error;
+        }
+    },
+
+    // Merge local and remote data, preserving local items and adding new remote items
+    mergeData(localData, remoteData, type) {
+        // Start with a copy of local data to preserve all local changes
+        const merged = [...localData];
+        
+        // Add remote items that don't already exist locally
+        remoteData.forEach(remoteItem => {
+            // Check if this item already exists locally (match by content, not ID)
+            const isDuplicate = localData.some(localItem => {
+                return this.itemsMatch(localItem, remoteItem, type);
+            });
+            
+            // If not a duplicate, add it to the merged list
+            if (!isDuplicate) {
+                merged.push(remoteItem);
+            }
+        });
+        
+        return merged;
+    },
+
+    // Check if two items match (same data, excluding ID)
+    itemsMatch(item1, item2, type) {
+        switch (type) {
+            case 'income':
+            case 'expenses':
+                // Match by date, description, category, and amount
+                return item1.date === item2.date &&
+                       item1.description === item2.description &&
+                       item1.category === item2.category &&
+                       Math.abs(item1.amount - item2.amount) < 0.01; // Use epsilon for float comparison
+            
+            case 'invoices':
+                // Match by invoice number, client, dates, and amount
+                return item1.invoicenumber === item2.invoicenumber &&
+                       item1.client === item2.client &&
+                       item1.date === item2.date &&
+                       item1.duedate === item2.duedate &&
+                       Math.abs(item1.amount - item2.amount) < 0.01;
+            
+            default:
+                return false;
         }
     },
 
