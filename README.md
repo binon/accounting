@@ -10,7 +10,7 @@ A lightweight account management web application inspired by Xero, focused on si
 - **Invoice Management**: Create and manage invoices with status tracking (pending, paid, overdue)
 - **Google Sheets Direct Integration**: All data is stored directly in Google Sheets - no local storage
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
-- **Real-time Sync**: Changes are immediately saved to your Google Sheets
+- **Automatic Save**: Changes are automatically saved to your Google Sheets
 
 ## Live Demo
 
@@ -22,8 +22,9 @@ Visit the app: `https://[your-username].github.io/accounting/`
 
 This application requires Google Sheets integration to function. You will need:
 - A Google Account
-- A Google Cloud project with Sheets API enabled
-- A Google Apps Script Web App for write operations
+- A Google Cloud project with **Google Sheets API enabled**
+- An API Key for read access
+- A Google Apps Script Web App deployment for write operations
 
 ### Setup Instructions
 
@@ -52,7 +53,7 @@ To use Simple Accounting with Google Sheets:
    - Click "Deploy" → "New deployment"
    - Choose "Web app"
    - Set "Execute as" to "Me"
-   - Set "Who has access" to "Anyone" (or as needed)
+   - Set "Who has access" to "Anyone" (⚠️ Note: This allows unauthenticated access. For better security, use "Anyone with Google account" and implement authentication)
    - Click "Deploy" and copy the Web App URL
 
 4. **Configure in App**:
@@ -140,8 +141,9 @@ Requires a modern browser with ES6+ JavaScript support.
 - All data is stored in your personal Google Sheets
 - You have full control over your data
 - No third-party servers or databases
-- Google Sheets integration is required for the app to function
+- **Google Sheets integration is required** for the app to function
 - Data is only accessible to you and anyone you share your Google Sheet with
+- ⚠️ **Security Note**: Be careful with Web App access settings - "Anyone" allows unauthenticated access to your data
 
 ## Future Enhancements
 

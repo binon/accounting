@@ -74,13 +74,20 @@ Create four sheets with the following names and headers:
 
 ## Important Notes
 
-### Read-Only Access
-The current implementation uses API Key authentication, which provides **read-only** access to your Google Sheets. This means:
-- ✅ You can sync data FROM Google Sheets TO the app
-- ❌ You cannot sync data FROM the app TO Google Sheets
+### Direct Integration (Current Implementation)
+The application now requires both API Key (for reading) and Google Apps Script Web App (for writing):
+- ✅ Read data using Google Sheets API with API Key
+- ✅ Write data using Google Apps Script Web App
+- ✅ No local storage - all data lives in Google Sheets
+- ❌ No sync button - data is automatically saved
 
-### For Bi-Directional Sync
-If you want to write data from the app back to Google Sheets, you'll need to implement OAuth 2.0 or use Google Apps Script. See `google-apps-script-example.js` for a complete example.
+### Security Considerations
+**⚠️ Important**: When deploying your Google Apps Script Web App:
+- Setting "Who has access" to "Anyone" allows unauthenticated write access to your sheets
+- For better security, use "Anyone with Google account" and implement proper authentication
+- Never share your Web App URL publicly
+- Consider implementing rate limiting and authentication in your Apps Script
+- Regularly review access logs in Google Cloud Console
 
 ## Troubleshooting
 
