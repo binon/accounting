@@ -10,9 +10,9 @@ const APP_CONFIG = {
         SCOPES: ['https://www.googleapis.com/auth/spreadsheets'],
         // Google Sheets Integration Settings
         // Update these values with your Google Sheets credentials
-        SPREADSHEET_ID: '', // Your Google Spreadsheet ID from the URL
-        API_KEY: '',        // Your Google API Key for read access
-        WEB_APP_URL: ''     // Your Google Apps Script Web App URL for write access
+        SPREADSHEET_ID: '1yCVMBimNPGTdoA_nUWS-Uj8Z5OJvEjtWVbKntVG8PdM', // Your Google Spreadsheet ID from the URL
+        API_KEY: 'AIzaSyC0AyDIgfB77Wwkk8LRmHS2rg6m63Oknos',        // Your Google API Key for read access
+        WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbwgO12mZfxa4jdhJ3P6vy_1sylZx0-g9qBo6xUYGiEkF8YXIHRr5d9sYZPrFVZevycIeQ/exec'     // Your Google Apps Script Web App URL for write access
     },
     
     // Data structure for Google Sheets
