@@ -152,13 +152,17 @@ const Invoices = {
 
         tbody.innerHTML = this.invoicesList
             .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .map(invoice => `
+            .map(invoice => {
+                // Ensure amount is a number
+                const amount = typeof invoice.amount === 'number' ? invoice.amount : parseFloat(invoice.amount) || 0;
+                
+                return `
                 <tr>
                     <td><strong>${invoice.invoicenumber}</strong></td>
                     <td>${invoice.client}</td>
                     <td>${this.formatDate(invoice.date)}</td>
                     <td>${this.formatDate(invoice.duedate)}</td>
-                    <td>$${invoice.amount.toFixed(2)}</td>
+                    <td>$${amount.toFixed(2)}</td>
                     <td>
                         <span class="status-badge ${invoice.status}">
                             ${invoice.status}
@@ -175,7 +179,8 @@ const Invoices = {
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
     },
 
     // Format date for display

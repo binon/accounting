@@ -129,12 +129,16 @@ const Expenses = {
 
         tbody.innerHTML = this.expensesList
             .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .map(expense => `
+            .map(expense => {
+                // Ensure amount is a number
+                const amount = typeof expense.amount === 'number' ? expense.amount : parseFloat(expense.amount) || 0;
+                
+                return `
                 <tr>
                     <td>${this.formatDate(expense.date)}</td>
                     <td>${expense.description}</td>
                     <td>${expense.category}</td>
-                    <td>$${expense.amount.toFixed(2)}</td>
+                    <td>$${amount.toFixed(2)}</td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn btn-small btn-secondary" onclick="Expenses.showAddForm(${JSON.stringify(expense).replace(/"/g, '&quot;')})">
@@ -146,7 +150,8 @@ const Expenses = {
                         </div>
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
     },
 
     // Format date for display
@@ -166,7 +171,10 @@ const Expenses = {
                 const date = new Date(expense.date);
                 return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
             })
-            .reduce((sum, expense) => sum + expense.amount, 0);
+            .reduce((sum, expense) => {
+                const amount = typeof expense.amount === 'number' ? expense.amount : parseFloat(expense.amount) || 0;
+                return sum + amount;
+            }, 0);
     }
 };
 

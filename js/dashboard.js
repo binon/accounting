@@ -80,7 +80,11 @@ const Dashboard = {
             return;
         }
 
-        container.innerHTML = recentTransactions.map(transaction => `
+        container.innerHTML = recentTransactions.map(transaction => {
+            // Ensure amount is a number
+            const amount = typeof transaction.amount === 'number' ? transaction.amount : parseFloat(transaction.amount) || 0;
+            
+            return `
             <div class="transaction-item">
                 <div class="transaction-info">
                     <div class="transaction-icon ${transaction.type}">
@@ -92,10 +96,11 @@ const Dashboard = {
                     </div>
                 </div>
                 <div class="transaction-amount ${transaction.type}">
-                    ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
+                    ${transaction.type === 'income' ? '+' : '-'}$${amount.toFixed(2)}
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     },
 
     // Format date for display
