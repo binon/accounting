@@ -79,6 +79,27 @@ const GoogleSheets = {
             return result;
         } catch (error) {
             console.error('Error writing to sheet:', error);
+            
+            // Provide helpful error message for CORS issues
+            if (error.message && error.message.includes('Failed to fetch')) {
+                const corsError = new Error(
+                    'CORS Error: Unable to connect to Google Apps Script.\n\n' +
+                    'This usually means:\n' +
+                    '1. Your Google Apps Script is not deployed or the URL is incorrect\n' +
+                    '2. Your Google Apps Script needs to be updated with CORS support\n' +
+                    '3. The script is not accessible (check "Who has access" setting)\n\n' +
+                    'Please follow these steps:\n' +
+                    '1. Open your Google Sheet\n' +
+                    '2. Go to Extensions → Apps Script\n' +
+                    '3. Copy the code from docs/google-apps-script-example.js\n' +
+                    '4. Deploy as a Web App with "Execute as: Me" and "Who has access: Anyone"\n' +
+                    '5. Update the WEB_APP_URL in js/config.js with the deployment URL\n\n' +
+                    'See README.md for detailed setup instructions.'
+                );
+                corsError.name = 'CORSError';
+                throw corsError;
+            }
+            
             throw error;
         }
     },

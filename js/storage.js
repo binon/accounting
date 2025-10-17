@@ -18,6 +18,14 @@ const Storage = {
             return true;
         } catch (error) {
             console.error('Error saving income:', error);
+            
+            // Show user-friendly error message
+            if (error.name === 'CORSError') {
+                alert(error.message);
+            } else {
+                alert('Failed to save income data. Please check your Google Sheets configuration.\n\nError: ' + error.message);
+            }
+            
             return false;
         }
     },
@@ -40,6 +48,14 @@ const Storage = {
             return true;
         } catch (error) {
             console.error('Error saving expenses:', error);
+            
+            // Show user-friendly error message
+            if (error.name === 'CORSError') {
+                alert(error.message);
+            } else {
+                alert('Failed to save expense data. Please check your Google Sheets configuration.\n\nError: ' + error.message);
+            }
+            
             return false;
         }
     },
@@ -62,6 +78,14 @@ const Storage = {
             return true;
         } catch (error) {
             console.error('Error saving invoices:', error);
+            
+            // Show user-friendly error message
+            if (error.name === 'CORSError') {
+                alert(error.message);
+            } else {
+                alert('Failed to save invoice data. Please check your Google Sheets configuration.\n\nError: ' + error.message);
+            }
+            
             return false;
         }
     }

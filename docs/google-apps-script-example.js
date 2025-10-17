@@ -4,6 +4,9 @@
  * This script enables bi-directional sync between the Simple Accounting app
  * and Google Sheets. Deploy this as a Web App to create an API endpoint.
  * 
+ * ⚠️ IMPORTANT: This script includes CORS headers to allow requests from GitHub Pages.
+ * Without proper CORS configuration, the app will fail with CORS errors.
+ * 
  * Setup Instructions:
  * 1. Open your Google Sheet
  * 2. Go to Extensions → Apps Script
@@ -16,6 +19,15 @@
  * 9. Click "Deploy"
  * 10. Copy the Web App URL
  * 11. Use this URL in your app for API calls
+ * 
+ * CORS Configuration:
+ * - This script automatically handles CORS preflight (OPTIONS) requests
+ * - All responses include Access-Control-Allow-Origin headers
+ * - This allows the app to work from GitHub Pages or any domain
+ * 
+ * If you need to restrict access to specific domains, replace the '*' in
+ * Access-Control-Allow-Origin headers with your specific domain:
+ * .setHeader('Access-Control-Allow-Origin', 'https://yourusername.github.io')
  */
 
 // Configuration
@@ -52,6 +64,14 @@ function doGet(e) {
   } catch (error) {
     return createResponse(false, error.toString());
   }
+}
+
+/**
+ * Handle OPTIONS requests - CORS preflight
+ * This is critical for cross-origin requests from GitHub Pages
+ */
+function doOptions(e) {
+  return createCorsResponse();
 }
 
 /**
@@ -264,7 +284,7 @@ function writeAllSheets(data) {
 }
 
 /**
- * Create a JSON response
+ * Create a JSON response with CORS headers
  */
 function createResponse(success, message, data = null) {
   const response = {
@@ -279,7 +299,24 @@ function createResponse(success, message, data = null) {
   
   return ContentService
     .createTextOutput(JSON.stringify(response))
-    .setMimeType(ContentService.MimeType.JSON);
+    .setMimeType(ContentService.MimeType.JSON)
+    .setHeader('Access-Control-Allow-Origin', '*')
+    .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .setHeader('Access-Control-Allow-Headers', 'Content-Type')
+    .setHeader('Access-Control-Max-Age', '86400');
+}
+
+/**
+ * Create a CORS preflight response
+ */
+function createCorsResponse() {
+  return ContentService
+    .createTextOutput('')
+    .setMimeType(ContentService.MimeType.TEXT)
+    .setHeader('Access-Control-Allow-Origin', '*')
+    .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    .setHeader('Access-Control-Allow-Headers', 'Content-Type')
+    .setHeader('Access-Control-Max-Age', '86400');
 }
 
 /**
