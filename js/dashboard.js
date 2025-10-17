@@ -15,20 +15,22 @@ const Dashboard = {
     updateSummaryCards() {
         // Total income
         const totalIncome = Income.getTotalForMonth();
+        const safeIncome = typeof totalIncome === 'number' ? totalIncome : 0;
         const incomeEl = document.getElementById('totalIncome');
         if (incomeEl) {
-            incomeEl.textContent = `$${totalIncome.toFixed(2)}`;
+            incomeEl.textContent = `$${safeIncome.toFixed(2)}`;
         }
 
         // Total expenses
         const totalExpenses = Expenses.getTotalForMonth();
+        const safeExpenses = typeof totalExpenses === 'number' ? totalExpenses : 0;
         const expensesEl = document.getElementById('totalExpenses');
         if (expensesEl) {
-            expensesEl.textContent = `$${totalExpenses.toFixed(2)}`;
+            expensesEl.textContent = `$${safeExpenses.toFixed(2)}`;
         }
 
         // Net profit
-        const netProfit = totalIncome - totalExpenses;
+        const netProfit = safeIncome - safeExpenses;
         const profitEl = document.getElementById('netProfit');
         if (profitEl) {
             profitEl.textContent = `$${netProfit.toFixed(2)}`;
@@ -80,7 +82,11 @@ const Dashboard = {
             return;
         }
 
-        container.innerHTML = recentTransactions.map(transaction => `
+        container.innerHTML = recentTransactions.map(transaction => {
+            // Ensure amount is a number
+            const amount = typeof transaction.amount === 'number' ? transaction.amount : parseFloat(transaction.amount) || 0;
+            
+            return `
             <div class="transaction-item">
                 <div class="transaction-info">
                     <div class="transaction-icon ${transaction.type}">
@@ -92,10 +98,11 @@ const Dashboard = {
                     </div>
                 </div>
                 <div class="transaction-amount ${transaction.type}">
-                    ${transaction.type === 'income' ? '+' : '-'}$${transaction.amount.toFixed(2)}
+                    ${transaction.type === 'income' ? '+' : '-'}$${amount.toFixed(2)}
                 </div>
             </div>
-        `).join('');
+        `;
+        }).join('');
     },
 
     // Format date for display

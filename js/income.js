@@ -132,19 +132,22 @@ const Income = {
         tbody.innerHTML = this.incomeList
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .map(income => {
+                // Ensure amount is a number
+                const amount = typeof income.amount === 'number' ? income.amount : parseFloat(income.amount) || 0;
+                
                 const safeIncome = {
                     id: income.id,
                     date: income.date,
                     description: this.escapeHtml(income.description),
                     category: this.escapeHtml(income.category),
-                    amount: income.amount
+                    amount: amount
                 };
                 return `
                 <tr data-id="${income.id}">
                     <td>${this.formatDate(income.date)}</td>
                     <td>${safeIncome.description}</td>
                     <td>${safeIncome.category}</td>
-                    <td>$${income.amount.toFixed(2)}</td>
+                    <td>$${amount.toFixed(2)}</td>
                     <td>
                         <div class="action-buttons">
                             <button class="btn btn-small btn-secondary edit-income-btn" data-id="${income.id}">
@@ -200,7 +203,10 @@ const Income = {
                 const date = new Date(income.date);
                 return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
             })
-            .reduce((sum, income) => sum + income.amount, 0);
+            .reduce((sum, income) => {
+                const amount = typeof income.amount === 'number' ? income.amount : parseFloat(income.amount) || 0;
+                return sum + amount;
+            }, 0);
     }
 };
 

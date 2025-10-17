@@ -105,7 +105,14 @@ const GoogleSheets = {
             
             headers.forEach((header, i) => {
                 const key = header.toLowerCase().replace(/\s+/g, '');
-                item[key] = row[i] || '';
+                const value = row[i] || '';
+                
+                // Convert amount fields to numbers
+                if (key === 'amount') {
+                    item[key] = parseFloat(value) || 0;
+                } else {
+                    item[key] = value;
+                }
             });
 
             return item;
