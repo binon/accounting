@@ -3,8 +3,8 @@ const Income = {
     incomeList: [],
 
     // Initialize
-    init() {
-        this.incomeList = Storage.getIncome();
+    async init() {
+        this.incomeList = await Storage.getIncome();
         this.setupEventListeners();
         this.render();
     },
@@ -84,39 +84,39 @@ const Income = {
     },
 
     // Add income
-    add(income) {
+    async add(income) {
         // Generate a more robust ID
         income.id = Date.now() + Math.random().toString(36).substr(2, 9);
         this.incomeList.push(income);
-        this.save();
+        await this.save();
         this.render();
-        Dashboard.refresh();
+        await Dashboard.refresh();
     },
 
     // Update income
-    update(income) {
+    async update(income) {
         const index = this.incomeList.findIndex(i => i.id === income.id);
         if (index !== -1) {
             this.incomeList[index] = income;
-            this.save();
+            await this.save();
             this.render();
-            Dashboard.refresh();
+            await Dashboard.refresh();
         }
     },
 
     // Delete income
-    delete(id) {
+    async delete(id) {
         if (confirm('Are you sure you want to delete this income entry?')) {
             this.incomeList = this.incomeList.filter(i => i.id !== id);
-            this.save();
+            await this.save();
             this.render();
-            Dashboard.refresh();
+            await Dashboard.refresh();
         }
     },
 
     // Save to storage
-    save() {
-        Storage.saveIncome(this.incomeList);
+    async save() {
+        await Storage.saveIncome(this.incomeList);
     },
 
     // Render income list

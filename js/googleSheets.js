@@ -1,7 +1,6 @@
 // Google Sheets Integration Manager
 const GoogleSheets = {
     settings: null,
-    AMOUNT_EPSILON: 0.01, // Tolerance for comparing monetary amounts
 
     // Initialize with settings
     init() {
@@ -11,7 +10,7 @@ const GoogleSheets = {
 
     // Check if Google Sheets is configured
     isConfigured() {
-        return !!(this.settings && this.settings.spreadsheetId && this.settings.apiKey);
+        return !!(this.settings && this.settings.spreadsheetId && this.settings.apiKey && this.settings.webAppUrl);
     },
 
     // Build API URL for a specific sheet
@@ -44,117 +43,79 @@ const GoogleSheets = {
         }
     },
 
-    // Update data in a sheet (requires OAuth - placeholder for future implementation)
-    async updateSheet(sheetName, range, values) {
-        if (!this.isConfigured()) {
-            throw new Error('Google Sheets not configured. Please add your Spreadsheet ID and API Key in Settings.');
-        }
-
-        // Note: This requires OAuth authentication which is more complex
-        // For now, this is a placeholder. In production, you would:
-        // 1. Implement OAuth 2.0 flow
-        // 2. Use authorized API calls
-        // 3. Or use Google Apps Script as a proxy
+    // Write data to a sheet using Google Apps Script Web App
+    async writeSheet(sheetName, data, type) {
+        const settings = this.settings;
         
-        console.warn('Update functionality requires OAuth implementation or Google Apps Script proxy');
-        throw new Error('Update functionality not yet implemented. Please use Google Apps Script for write operations.');
-    },
-
-    // Sync all data from Google Sheets to local storage
-    async syncFromSheets() {
-        if (!this.isConfigured()) {
-            throw new Error('Google Sheets not configured');
+        if (!settings.webAppUrl) {
+            throw new Error('Web App URL not configured. Please set up Google Apps Script and add the Web App URL in Settings.');
         }
 
         try {
-            // Fetch income data
-            const incomeData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.INCOME);
-            const remoteIncome = incomeData.length > 1 ? this.parseSheetData(incomeData, 'income') : [];
-            const mergedIncome = this.mergeData(Storage.getIncome(), remoteIncome, 'income');
-            Storage.saveIncome(mergedIncome);
+            // Format data for export
+            const formattedData = this.formatDataForWrite(data, type);
+            
+            const response = await fetch(settings.webAppUrl, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: 'write',
+                    sheet: sheetName,
+                    data: formattedData
+                })
+            });
 
-            // Fetch expenses data
-            const expensesData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.EXPENSES);
-            const remoteExpenses = expensesData.length > 1 ? this.parseSheetData(expensesData, 'expenses') : [];
-            const mergedExpenses = this.mergeData(Storage.getExpenses(), remoteExpenses, 'expenses');
-            Storage.saveExpenses(mergedExpenses);
+            if (!response.ok) {
+                throw new Error(`Failed to write data: ${response.statusText}`);
+            }
 
-            // Fetch invoices data
-            const invoicesData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.INVOICES);
-            const remoteInvoices = invoicesData.length > 1 ? this.parseSheetData(invoicesData, 'invoices') : [];
-            const mergedInvoices = this.mergeData(Storage.getInvoices(), remoteInvoices, 'invoices');
-            Storage.saveInvoices(mergedInvoices);
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.message || 'Failed to write data');
+            }
 
-            // Update last sync time
-            const settings = Storage.getSettings();
-            settings.lastSync = new Date().toISOString();
-            Storage.saveSettings(settings);
-
-            return true;
+            return result;
         } catch (error) {
-            console.error('Error syncing from sheets:', error);
+            console.error('Error writing to sheet:', error);
             throw error;
         }
     },
 
-    // Merge local and remote data, preserving local items and adding new remote items
-    mergeData(localData, remoteData, type) {
-        // Validate inputs
-        if (!Array.isArray(localData) || !Array.isArray(remoteData)) {
-            console.warn('Invalid data provided to mergeData, using empty arrays as fallback');
-            return Array.isArray(localData) ? [...localData] : (Array.isArray(remoteData) ? [...remoteData] : []);
-        }
-        
-        // Start with a copy of local data to preserve all local changes
-        const merged = [...localData];
-        
-        // Add remote items that don't already exist locally
-        remoteData.forEach(remoteItem => {
-            // Skip invalid items
-            if (!remoteItem) return;
+    // Format data for writing to sheets
+    formatDataForWrite(data, type) {
+        if (!data || data.length === 0) return [];
+
+        return data.map(item => {
+            const formatted = {};
             
-            // Check if this item already exists locally (match by content, not ID)
-            const isDuplicate = localData.some(localItem => {
-                return this.itemsMatch(localItem, remoteItem, type);
-            });
-            
-            // If not a duplicate, add it to the merged list
-            if (!isDuplicate) {
-                merged.push(remoteItem);
+            switch (type) {
+                case 'income':
+                case 'expenses':
+                    formatted.date = item.date || '';
+                    formatted.description = item.description || '';
+                    formatted.category = item.category || '';
+                    formatted.amount = item.amount || 0;
+                    break;
+                
+                case 'invoices':
+                    formatted.invoicenumber = item.invoicenumber || '';
+                    formatted.client = item.client || '';
+                    formatted.date = item.date || '';
+                    formatted.duedate = item.duedate || '';
+                    formatted.amount = item.amount || 0;
+                    formatted.status = item.status || 'pending';
+                    break;
             }
+            
+            return formatted;
         });
-        
-        return merged;
     },
 
-    // Check if two items match (same data, excluding ID)
-    itemsMatch(item1, item2, type) {
-        // Validate inputs
-        if (!item1 || !item2) {
-            return false;
-        }
-        
-        switch (type) {
-            case 'income':
-            case 'expenses':
-                // Match by date, description, category, and amount
-                return item1.date === item2.date &&
-                       item1.description === item2.description &&
-                       item1.category === item2.category &&
-                       Math.abs(item1.amount - item2.amount) < this.AMOUNT_EPSILON;
-            
-            case 'invoices':
-                // Match by invoice number, client, dates, and amount
-                return item1.invoicenumber === item2.invoicenumber &&
-                       item1.client === item2.client &&
-                       item1.date === item2.date &&
-                       item1.duedate === item2.duedate &&
-                       Math.abs(item1.amount - item2.amount) < this.AMOUNT_EPSILON;
-            
-            default:
-                return false;
-        }
-    },
+
 
     // Parse sheet data based on type
     parseSheetData(rows, type) {
@@ -182,39 +143,7 @@ const GoogleSheets = {
         });
     },
 
-    // Format data for exporting to sheets
-    formatForExport(data, type) {
-        if (!data || data.length === 0) return [];
 
-        let headers = [];
-        
-        switch (type) {
-            case 'income':
-                headers = ['Date', 'Description', 'Category', 'Amount'];
-                break;
-            case 'expenses':
-                headers = ['Date', 'Description', 'Category', 'Amount'];
-                break;
-            case 'invoices':
-                headers = ['Invoice #', 'Client', 'Date', 'Due Date', 'Amount', 'Status'];
-                break;
-            default:
-                headers = Object.keys(data[0] || {});
-        }
-
-        const rows = [headers];
-        
-        data.forEach(item => {
-            const row = [];
-            headers.forEach(header => {
-                const key = header.toLowerCase().replace(/\s+/g, '').replace('#', 'number');
-                row.push(item[key] || '');
-            });
-            rows.push(row);
-        });
-
-        return rows;
-    }
 };
 
 // Export for use in other modules

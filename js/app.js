@@ -3,27 +3,31 @@ const App = {
     currentView: 'dashboard',
 
     // Initialize the application
-    init() {
+    async init() {
         console.log('Initializing Simple Accounting App...');
         
-        // Initialize all modules
-        Income.init();
-        Expenses.init();
-        Invoices.init();
-        Dashboard.init();
+        // Initialize Google Sheets first
         GoogleSheets.init();
+
+        // Check if configured
+        if (!GoogleSheets.isConfigured()) {
+            this.showConfigurationRequired();
+            return;
+        }
+
+        // Initialize all modules
+        await Income.init();
+        await Expenses.init();
+        await Invoices.init();
+        Dashboard.init();
 
         // Setup event listeners
         this.setupNavigation();
         this.setupModals();
         this.setupSettings();
-        this.setupSync();
 
         // Check for overdue invoices
         Invoices.updateOverdueStatus();
-
-        // Show welcome message if first time
-        this.showWelcomeIfNeeded();
 
         console.log('App initialized successfully!');
     },
@@ -124,6 +128,7 @@ const App = {
         // Populate settings
         const spreadsheetIdInput = document.getElementById('spreadsheetId');
         const apiKeyInput = document.getElementById('apiKey');
+        const webAppUrlInput = document.getElementById('webAppUrl');
 
         if (spreadsheetIdInput) {
             spreadsheetIdInput.value = settings.spreadsheetId || '';
@@ -131,111 +136,75 @@ const App = {
         if (apiKeyInput) {
             apiKeyInput.value = settings.apiKey || '';
         }
+        if (webAppUrlInput) {
+            webAppUrlInput.value = settings.webAppUrl || '';
+        }
 
         settingsModal.classList.add('active');
     },
 
     // Save settings
-    saveSettings() {
+    async saveSettings() {
         const spreadsheetId = document.getElementById('spreadsheetId').value.trim();
         const apiKey = document.getElementById('apiKey').value.trim();
+        const webAppUrl = document.getElementById('webAppUrl').value.trim();
 
         const settings = {
             spreadsheetId,
             apiKey,
-            lastSync: Storage.getSettings().lastSync
+            webAppUrl
         };
 
         if (Storage.saveSettings(settings)) {
             GoogleSheets.init();
-            alert('Settings saved successfully!');
+            alert('Settings saved successfully! Reloading data...');
             document.getElementById('settingsModal').classList.remove('active');
+            
+            // Reload the application with new settings
+            location.reload();
         } else {
             alert('Error saving settings. Please try again.');
         }
     },
 
-    // Setup sync functionality
-    setupSync() {
-        const syncBtn = document.getElementById('syncBtn');
-        
-        if (syncBtn) {
-            syncBtn.addEventListener('click', async () => {
-                await this.syncWithGoogleSheets();
-            });
-        }
-    },
-
-    // Sync with Google Sheets
-    async syncWithGoogleSheets() {
-        const syncBtn = document.getElementById('syncBtn');
-        const syncIcon = syncBtn.querySelector('i');
-
-        if (!GoogleSheets.isConfigured()) {
-            alert('Please configure Google Sheets integration in Settings first.');
-            this.showSettings();
-            return;
-        }
-
-        try {
-            // Show loading state
-            syncBtn.disabled = true;
-            syncIcon.classList.add('fa-spin');
-
-            // Perform sync
-            await GoogleSheets.syncFromSheets();
-
-            // Reload data
-            Income.incomeList = Storage.getIncome();
-            Income.render();
-            
-            Expenses.expensesList = Storage.getExpenses();
-            Expenses.render();
-            
-            Invoices.invoicesList = Storage.getInvoices();
-            Invoices.render();
-            
-            Dashboard.refresh();
-
-            // Show detailed sync results
-            const incomeCount = Income.incomeList.length;
-            const expensesCount = Expenses.expensesList.length;
-            const invoicesCount = Invoices.invoicesList.length;
-            const syncMessage = `Successfully synced with Google Sheets!\n\nSynced items:\n- Income: ${incomeCount}\n- Expenses: ${expensesCount}\n- Invoices: ${invoicesCount}`;
-            alert(syncMessage);
-        } catch (error) {
-            console.error('Sync error:', error);
-            alert('Error syncing with Google Sheets: ' + error.message);
-        } finally {
-            // Remove loading state
-            syncBtn.disabled = false;
-            syncIcon.classList.remove('fa-spin');
-        }
-    },
-
-    // Show welcome message if first time
-    showWelcomeIfNeeded() {
-        const hasSeenWelcome = localStorage.getItem('simple_accounting_welcome_seen');
-        
-        if (!hasSeenWelcome) {
-            setTimeout(() => {
-                const settings = Storage.getSettings();
-                if (!settings.spreadsheetId) {
-                    if (confirm('Welcome to Simple Accounting! Would you like to configure Google Sheets integration now?')) {
-                        this.showSettings();
-                    }
-                }
-                localStorage.setItem('simple_accounting_welcome_seen', 'true');
-            }, 1000);
+    // Show configuration required message
+    showConfigurationRequired() {
+        const mainContent = document.querySelector('.app-main');
+        if (mainContent) {
+            mainContent.innerHTML = `
+                <div style="text-align: center; padding: 50px; max-width: 600px; margin: 0 auto;">
+                    <i class="fas fa-cog" style="font-size: 64px; color: #6366f1; margin-bottom: 20px;"></i>
+                    <h2>Configuration Required</h2>
+                    <p style="margin: 20px 0;">Please configure your Google Sheets integration to use Simple Accounting.</p>
+                    <p style="margin-bottom: 30px;">You'll need:</p>
+                    <ul style="text-align: left; display: inline-block;">
+                        <li>Google Spreadsheet ID</li>
+                        <li>Google API Key (for read access)</li>
+                        <li>Google Apps Script Web App URL (for write access)</li>
+                    </ul>
+                    <br><br>
+                    <button onclick="App.showSettings()" class="btn btn-primary" style="margin-top: 20px;">
+                        <i class="fas fa-cog"></i> Open Settings
+                    </button>
+                </div>
+            `;
         }
     }
 };
 
 // Initialize app when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => App.init());
+    document.addEventListener('DOMContentLoaded', () => {
+        App.init().catch(error => {
+            console.error('Failed to initialize app:', error);
+            alert('Failed to load data from Google Sheets. Please check your configuration.');
+        });
+    });
 } else {
-    App.init();
+    App.init().catch(error => {
+        console.error('Failed to initialize app:', error);
+        alert('Failed to load data from Google Sheets. Please check your configuration.');
+    });
 }
 
 // Export for use in other modules
