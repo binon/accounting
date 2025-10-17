@@ -48,13 +48,15 @@ To use Simple Accounting with Google Sheets:
 3. **Set Up Google Apps Script**:
    - Open your Google Sheet
    - Go to Extensions → Apps Script
-   - Copy the code from `docs/google-apps-script-example.js`
-   - Paste it into the Apps Script editor
+   - Copy the **entire code** from `docs/google-apps-script-example.js`
+   - Paste it into the Apps Script editor (replace any existing code)
+   - **Important:** Make sure to use the provided script - it includes essential CORS headers
    - Click "Deploy" → "New deployment"
    - Choose "Web app"
    - Set "Execute as" to "Me"
    - Set "Who has access" to "Anyone" (⚠️ Note: This allows unauthenticated access. For better security, use "Anyone with Google account" and implement authentication)
    - Click "Deploy" and copy the Web App URL
+   - **Note:** The URL should end with `/exec` (not `/dev`)
 
 4. **Configure in config.js**:
    - Open `js/config.js` in your text editor
@@ -126,6 +128,47 @@ accounting/
 - No local storage - all data lives in your Google Sheet
 - Data format compatible with spreadsheet applications
 - Bi-directional sync via Google Apps Script
+
+## Troubleshooting
+
+### CORS Error when saving data
+
+If you see an error like "Access to fetch has been blocked by CORS policy", this means your Google Apps Script is not properly configured for cross-origin requests.
+
+**Solution:**
+
+1. **Update your Google Apps Script:**
+   - Open your Google Sheet
+   - Go to Extensions → Apps Script
+   - **Replace ALL the code** with the updated version from `docs/google-apps-script-example.js`
+   - The updated version includes proper CORS headers
+
+2. **Redeploy the Web App:**
+   - Click "Deploy" → "Manage deployments"
+   - Click the edit icon (pencil) next to your active deployment
+   - Under "Version", select "New version"
+   - Click "Deploy"
+   - Copy the new Web App URL (it might be the same)
+
+3. **Update config.js:**
+   - Make sure `WEB_APP_URL` in `js/config.js` matches your deployment URL
+   - The URL should end with `/exec` (not `/dev`)
+
+4. **Verify deployment settings:**
+   - "Execute as" should be "Me"
+   - "Who has access" should be "Anyone" (or at least "Anyone with the link")
+
+**Why this happens:**
+
+Google Apps Script Web Apps need to explicitly return CORS headers to allow requests from GitHub Pages. The updated script includes:
+- A `doOptions()` function to handle CORS preflight requests
+- CORS headers in all responses (`Access-Control-Allow-Origin`, etc.)
+
+Without these, browsers block the requests for security reasons.
+
+### Favicon 404 Error
+
+The "Failed to load resource: favicon.ico" error is harmless and can be ignored. To fix it, simply add a `favicon.ico` file to your repository root.
 
 ## Browser Compatibility
 
