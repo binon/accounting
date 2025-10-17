@@ -7,7 +7,12 @@ const APP_CONFIG = {
     // Google Sheets API configuration
     GOOGLE_SHEETS: {
         API_URL: 'https://sheets.googleapis.com/v4/spreadsheets',
-        SCOPES: ['https://www.googleapis.com/auth/spreadsheets']
+        SCOPES: ['https://www.googleapis.com/auth/spreadsheets'],
+        // Google Sheets Integration Settings
+        // Update these values with your Google Sheets credentials
+        SPREADSHEET_ID: '', // Your Google Spreadsheet ID from the URL
+        API_KEY: '',        // Your Google API Key for read access
+        WEB_APP_URL: ''     // Your Google Apps Script Web App URL for write access
     },
     
     // Data structure for Google Sheets
