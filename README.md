@@ -56,13 +56,13 @@ To use Simple Accounting with Google Sheets:
    - Set "Who has access" to "Anyone" (⚠️ Note: This allows unauthenticated access. For better security, use "Anyone with Google account" and implement authentication)
    - Click "Deploy" and copy the Web App URL
 
-4. **Configure in App**:
-   - Open the Simple Accounting app
-   - Click the Settings icon (⚙️) or the "Open Settings" button
-   - Enter your Spreadsheet ID (from the Google Sheets URL)
-   - Enter your API Key
-   - Enter your Web App URL (from Apps Script deployment)
-   - Click "Save Settings"
+4. **Configure in config.js**:
+   - Open `js/config.js` in your text editor
+   - Update the `GOOGLE_SHEETS` configuration with your values:
+     - `SPREADSHEET_ID`: Your Spreadsheet ID (from the Google Sheets URL)
+     - `API_KEY`: Your API Key
+     - `WEB_APP_URL`: Your Web App URL (from Apps Script deployment)
+   - Save the file
 
 5. **Start Using**:
    - The app will reload and connect to your Google Sheets

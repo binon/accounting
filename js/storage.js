@@ -64,38 +64,6 @@ const Storage = {
             console.error('Error saving invoices:', error);
             return false;
         }
-    },
-
-    // Get settings from localStorage (settings remain local)
-    getSettings() {
-        try {
-            const prefixedKey = APP_CONFIG.STORAGE_PREFIX + 'settings';
-            const data = localStorage.getItem(prefixedKey);
-            return data ? JSON.parse(data) : {
-                spreadsheetId: '',
-                apiKey: '',
-                webAppUrl: ''
-            };
-        } catch (error) {
-            console.error('Error loading settings:', error);
-            return {
-                spreadsheetId: '',
-                apiKey: '',
-                webAppUrl: ''
-            };
-        }
-    },
-
-    // Save settings to localStorage (settings remain local)
-    saveSettings(settings) {
-        try {
-            const prefixedKey = APP_CONFIG.STORAGE_PREFIX + 'settings';
-            localStorage.setItem(prefixedKey, JSON.stringify(settings));
-            return true;
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            return false;
-        }
     }
 };
 

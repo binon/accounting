@@ -24,7 +24,6 @@ const App = {
         // Setup event listeners
         this.setupNavigation();
         this.setupModals();
-        this.setupSettings();
 
         // Check for overdue invoices
         Invoices.updateOverdueStatus();
@@ -64,9 +63,7 @@ const App = {
     // Setup modal functionality
     setupModals() {
         const modal = document.getElementById('modal');
-        const settingsModal = document.getElementById('settingsModal');
         const modalClose = document.getElementById('modalClose');
-        const settingsClose = document.getElementById('settingsClose');
 
         // Close modal on close button
         if (modalClose) {
@@ -75,97 +72,24 @@ const App = {
             });
         }
 
-        if (settingsClose) {
-            settingsClose.addEventListener('click', () => {
-                settingsModal.classList.remove('active');
+        // Close modal on background click
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
             });
         }
-
-        // Close modal on background click
-        [modal, settingsModal].forEach(m => {
-            if (m) {
-                m.addEventListener('click', (e) => {
-                    if (e.target === m) {
-                        m.classList.remove('active');
-                    }
-                });
-            }
-        });
 
         // Close modal on ESC key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 modal.classList.remove('active');
-                settingsModal.classList.remove('active');
             }
         });
     },
 
-    // Setup settings
-    setupSettings() {
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsModal = document.getElementById('settingsModal');
-        const saveSettingsBtn = document.getElementById('saveSettings');
 
-        if (settingsBtn) {
-            settingsBtn.addEventListener('click', () => {
-                this.showSettings();
-            });
-        }
-
-        if (saveSettingsBtn) {
-            saveSettingsBtn.addEventListener('click', () => {
-                this.saveSettings();
-            });
-        }
-    },
-
-    // Show settings modal
-    showSettings() {
-        const settingsModal = document.getElementById('settingsModal');
-        const settings = Storage.getSettings();
-
-        // Populate settings
-        const spreadsheetIdInput = document.getElementById('spreadsheetId');
-        const apiKeyInput = document.getElementById('apiKey');
-        const webAppUrlInput = document.getElementById('webAppUrl');
-
-        if (spreadsheetIdInput) {
-            spreadsheetIdInput.value = settings.spreadsheetId || '';
-        }
-        if (apiKeyInput) {
-            apiKeyInput.value = settings.apiKey || '';
-        }
-        if (webAppUrlInput) {
-            webAppUrlInput.value = settings.webAppUrl || '';
-        }
-
-        settingsModal.classList.add('active');
-    },
-
-    // Save settings
-    async saveSettings() {
-        const spreadsheetId = document.getElementById('spreadsheetId').value.trim();
-        const apiKey = document.getElementById('apiKey').value.trim();
-        const webAppUrl = document.getElementById('webAppUrl').value.trim();
-
-        const settings = {
-            spreadsheetId,
-            apiKey,
-            webAppUrl
-        };
-
-        if (Storage.saveSettings(settings)) {
-            GoogleSheets.init();
-            alert('Settings saved successfully! Reloading data...');
-            document.getElementById('settingsModal').classList.remove('active');
-            
-            // Reload the application with new settings
-            location.reload();
-        } else {
-            alert('Error saving settings. Please try again.');
-        }
-    },
 
     // Show configuration required message
     showConfigurationRequired() {
@@ -175,17 +99,15 @@ const App = {
                 <div style="text-align: center; padding: 50px; max-width: 600px; margin: 0 auto;">
                     <i class="fas fa-cog" style="font-size: 64px; color: #6366f1; margin-bottom: 20px;"></i>
                     <h2>Configuration Required</h2>
-                    <p style="margin: 20px 0;">Please configure your Google Sheets integration to use Simple Accounting.</p>
-                    <p style="margin-bottom: 30px;">You'll need:</p>
+                    <p style="margin: 20px 0;">Please configure your Google Sheets integration in config.js to use Simple Accounting.</p>
+                    <p style="margin-bottom: 30px;">You'll need to update the following in js/config.js:</p>
                     <ul style="text-align: left; display: inline-block;">
-                        <li>Google Spreadsheet ID</li>
-                        <li>Google API Key (for read access)</li>
-                        <li>Google Apps Script Web App URL (for write access)</li>
+                        <li>SPREADSHEET_ID - Your Google Spreadsheet ID</li>
+                        <li>API_KEY - Your Google API Key (for read access)</li>
+                        <li>WEB_APP_URL - Your Google Apps Script Web App URL (for write access)</li>
                     </ul>
                     <br><br>
-                    <button onclick="App.showSettings()" class="btn btn-primary" style="margin-top: 20px;">
-                        <i class="fas fa-cog"></i> Open Settings
-                    </button>
+                    <p style="margin-top: 20px; color: #666;">After updating config.js, refresh the page to load your data.</p>
                 </div>
             `;
         }

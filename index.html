@@ -17,9 +17,7 @@
                     <h1>Simple Accounting</h1>
                 </div>
                 <div class="header-actions">
-                    <button id="settingsBtn" class="btn btn-secondary" title="Settings">
-                        <i class="fas fa-cog"></i>
-                    </button>
+                    <!-- Settings removed - configure in js/config.js -->
                 </div>
             </div>
         </header>
@@ -196,40 +194,6 @@
             </div>
             <div class="modal-body" id="modalBody">
                 <!-- Form will be injected here -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Settings</h3>
-                <button class="modal-close" id="settingsClose">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="settings-section">
-                    <h4>Google Sheets Integration</h4>
-                    <p style="margin-bottom: 20px; color: #666;">All data is stored directly in Google Sheets. Configure your connection below.</p>
-                    <div class="form-group">
-                        <label for="spreadsheetId">Spreadsheet ID</label>
-                        <input type="text" id="spreadsheetId" class="form-input" placeholder="Enter your Google Sheets ID">
-                        <small>Find this in your Google Sheets URL</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="apiKey">API Key</label>
-                        <input type="password" id="apiKey" class="form-input" placeholder="Enter your Google API Key">
-                        <small>Create an API key in Google Cloud Console (for read access)</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="webAppUrl">Web App URL</label>
-                        <input type="text" id="webAppUrl" class="form-input" placeholder="Enter your Google Apps Script Web App URL">
-                        <small>Deploy the Apps Script as a Web App (for write access)</small>
-                    </div>
-                    <button id="saveSettings" class="btn btn-primary">Save Settings</button>
-                </div>
             </div>
         </div>
     </div>

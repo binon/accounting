@@ -1,22 +1,20 @@
 // Google Sheets Integration Manager
 const GoogleSheets = {
-    settings: null,
-
     // Initialize with settings
     init() {
-        this.settings = Storage.getSettings();
         return this.isConfigured();
     },
 
     // Check if Google Sheets is configured
     isConfigured() {
-        return !!(this.settings && this.settings.spreadsheetId && this.settings.apiKey && this.settings.webAppUrl);
+        const config = APP_CONFIG.GOOGLE_SHEETS;
+        return !!(config.SPREADSHEET_ID && config.API_KEY && config.WEB_APP_URL);
     },
 
     // Build API URL for a specific sheet
     buildApiUrl(sheetName, range = '') {
-        const spreadsheetId = this.settings.spreadsheetId;
-        const apiKey = this.settings.apiKey;
+        const spreadsheetId = APP_CONFIG.GOOGLE_SHEETS.SPREADSHEET_ID;
+        const apiKey = APP_CONFIG.GOOGLE_SHEETS.API_KEY;
         const fullRange = range ? `${sheetName}!${range}` : sheetName;
         return `${APP_CONFIG.GOOGLE_SHEETS.API_URL}/${spreadsheetId}/values/${fullRange}?key=${apiKey}`;
     },
@@ -24,7 +22,7 @@ const GoogleSheets = {
     // Fetch data from a sheet
     async fetchSheet(sheetName, range = 'A:Z') {
         if (!this.isConfigured()) {
-            throw new Error('Google Sheets not configured. Please add your Spreadsheet ID and API Key in Settings.');
+            throw new Error('Google Sheets not configured. Please add your Spreadsheet ID and API Key in config.js.');
         }
 
         try {
@@ -45,17 +43,17 @@ const GoogleSheets = {
 
     // Write data to a sheet using Google Apps Script Web App
     async writeSheet(sheetName, data, type) {
-        const settings = this.settings;
+        const webAppUrl = APP_CONFIG.GOOGLE_SHEETS.WEB_APP_URL;
         
-        if (!settings.webAppUrl) {
-            throw new Error('Web App URL not configured. Please set up Google Apps Script and add the Web App URL in Settings.');
+        if (!webAppUrl) {
+            throw new Error('Web App URL not configured. Please set up Google Apps Script and add the Web App URL in config.js.');
         }
 
         try {
             // Format data for export
             const formattedData = this.formatDataForWrite(data, type);
             
-            const response = await fetch(settings.webAppUrl, {
+            const response = await fetch(webAppUrl, {
                 method: 'POST',
                 mode: 'cors',
                 headers: {
