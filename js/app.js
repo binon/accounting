@@ -197,7 +197,12 @@ const App = {
             
             Dashboard.refresh();
 
-            alert('Successfully synced with Google Sheets!');
+            // Show detailed sync results
+            const incomeCount = Income.incomeList.length;
+            const expensesCount = Expenses.expensesList.length;
+            const invoicesCount = Invoices.invoicesList.length;
+            const syncMessage = `Successfully synced with Google Sheets!\n\nSynced items:\n- Income: ${incomeCount}\n- Expenses: ${expensesCount}\n- Invoices: ${invoicesCount}`;
+            alert(syncMessage);
         } catch (error) {
             console.error('Sync error:', error);
             alert('Error syncing with Google Sheets: ' + error.message);

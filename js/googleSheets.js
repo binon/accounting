@@ -68,24 +68,18 @@ const GoogleSheets = {
         try {
             // Fetch income data
             const incomeData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.INCOME);
-            if (incomeData.length > 1) { // Skip header row
-                const income = this.parseSheetData(incomeData, 'income');
-                Storage.saveIncome(income);
-            }
+            const income = incomeData.length > 1 ? this.parseSheetData(incomeData, 'income') : [];
+            Storage.saveIncome(income);
 
             // Fetch expenses data
             const expensesData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.EXPENSES);
-            if (expensesData.length > 1) {
-                const expenses = this.parseSheetData(expensesData, 'expenses');
-                Storage.saveExpenses(expenses);
-            }
+            const expenses = expensesData.length > 1 ? this.parseSheetData(expensesData, 'expenses') : [];
+            Storage.saveExpenses(expenses);
 
             // Fetch invoices data
             const invoicesData = await this.fetchSheet(APP_CONFIG.SHEET_NAMES.INVOICES);
-            if (invoicesData.length > 1) {
-                const invoices = this.parseSheetData(invoicesData, 'invoices');
-                Storage.saveInvoices(invoices);
-            }
+            const invoices = invoicesData.length > 1 ? this.parseSheetData(invoicesData, 'invoices') : [];
+            Storage.saveInvoices(invoices);
 
             // Update last sync time
             const settings = Storage.getSettings();
