@@ -3,8 +3,8 @@ const Invoices = {
     invoicesList: [],
 
     // Initialize
-    init() {
-        this.invoicesList = Storage.getInvoices();
+    async init() {
+        this.invoicesList = await Storage.getInvoices();
         this.setupEventListeners();
         this.render();
     },
@@ -107,37 +107,37 @@ const Invoices = {
     },
 
     // Add invoice
-    add(invoice) {
+    async add(invoice) {
         this.invoicesList.push(invoice);
-        this.save();
+        await this.save();
         this.render();
-        Dashboard.refresh();
+        await Dashboard.refresh();
     },
 
     // Update invoice
-    update(invoice) {
+    async update(invoice) {
         const index = this.invoicesList.findIndex(i => i.id === invoice.id);
         if (index !== -1) {
             this.invoicesList[index] = invoice;
-            this.save();
+            await this.save();
             this.render();
-            Dashboard.refresh();
+            await Dashboard.refresh();
         }
     },
 
     // Delete invoice
-    delete(id) {
+    async delete(id) {
         if (confirm('Are you sure you want to delete this invoice?')) {
             this.invoicesList = this.invoicesList.filter(i => i.id !== id);
-            this.save();
+            await this.save();
             this.render();
-            Dashboard.refresh();
+            await Dashboard.refresh();
         }
     },
 
     // Save to storage
-    save() {
-        Storage.saveInvoices(this.invoicesList);
+    async save() {
+        await Storage.saveInvoices(this.invoicesList);
     },
 
     // Render invoices list

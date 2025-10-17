@@ -1,99 +1,101 @@
-// Local Storage Manager
+// Google Sheets Storage Manager - Direct integration with Google Sheets
 const Storage = {
-    // Save data to localStorage
-    save(key, data) {
+    // Get income data from Google Sheets
+    async getIncome() {
         try {
-            const prefixedKey = APP_CONFIG.STORAGE_PREFIX + key;
-            localStorage.setItem(prefixedKey, JSON.stringify(data));
+            const data = await GoogleSheets.fetchSheet(APP_CONFIG.SHEET_NAMES.INCOME);
+            return data.length > 1 ? GoogleSheets.parseSheetData(data, 'income') : [];
+        } catch (error) {
+            console.error('Error loading income:', error);
+            return [];
+        }
+    },
+
+    // Save income data to Google Sheets
+    async saveIncome(incomeList) {
+        try {
+            await GoogleSheets.writeSheet(APP_CONFIG.SHEET_NAMES.INCOME, incomeList, 'income');
             return true;
         } catch (error) {
-            console.error('Error saving to storage:', error);
+            console.error('Error saving income:', error);
             return false;
         }
     },
 
-    // Load data from localStorage
-    load(key, defaultValue = null) {
+    // Get expenses data from Google Sheets
+    async getExpenses() {
         try {
-            const prefixedKey = APP_CONFIG.STORAGE_PREFIX + key;
-            const data = localStorage.getItem(prefixedKey);
-            return data ? JSON.parse(data) : defaultValue;
+            const data = await GoogleSheets.fetchSheet(APP_CONFIG.SHEET_NAMES.EXPENSES);
+            return data.length > 1 ? GoogleSheets.parseSheetData(data, 'expenses') : [];
         } catch (error) {
-            console.error('Error loading from storage:', error);
-            return defaultValue;
+            console.error('Error loading expenses:', error);
+            return [];
         }
     },
 
-    // Remove data from localStorage
-    remove(key) {
+    // Save expenses data to Google Sheets
+    async saveExpenses(expensesList) {
         try {
-            const prefixedKey = APP_CONFIG.STORAGE_PREFIX + key;
-            localStorage.removeItem(prefixedKey);
+            await GoogleSheets.writeSheet(APP_CONFIG.SHEET_NAMES.EXPENSES, expensesList, 'expenses');
             return true;
         } catch (error) {
-            console.error('Error removing from storage:', error);
+            console.error('Error saving expenses:', error);
             return false;
         }
     },
 
-    // Clear all app data
-    clearAll() {
+    // Get invoices data from Google Sheets
+    async getInvoices() {
         try {
-            const keys = Object.keys(localStorage);
-            keys.forEach(key => {
-                if (key.startsWith(APP_CONFIG.STORAGE_PREFIX)) {
-                    localStorage.removeItem(key);
-                }
-            });
+            const data = await GoogleSheets.fetchSheet(APP_CONFIG.SHEET_NAMES.INVOICES);
+            return data.length > 1 ? GoogleSheets.parseSheetData(data, 'invoices') : [];
+        } catch (error) {
+            console.error('Error loading invoices:', error);
+            return [];
+        }
+    },
+
+    // Save invoices data to Google Sheets
+    async saveInvoices(invoicesList) {
+        try {
+            await GoogleSheets.writeSheet(APP_CONFIG.SHEET_NAMES.INVOICES, invoicesList, 'invoices');
             return true;
         } catch (error) {
-            console.error('Error clearing storage:', error);
+            console.error('Error saving invoices:', error);
             return false;
         }
     },
 
-    // Get income data
-    getIncome() {
-        return this.load('income', []);
-    },
-
-    // Save income data
-    saveIncome(incomeList) {
-        return this.save('income', incomeList);
-    },
-
-    // Get expenses data
-    getExpenses() {
-        return this.load('expenses', []);
-    },
-
-    // Save expenses data
-    saveExpenses(expensesList) {
-        return this.save('expenses', expensesList);
-    },
-
-    // Get invoices data
-    getInvoices() {
-        return this.load('invoices', []);
-    },
-
-    // Save invoices data
-    saveInvoices(invoicesList) {
-        return this.save('invoices', invoicesList);
-    },
-
-    // Get settings
+    // Get settings from localStorage (settings remain local)
     getSettings() {
-        return this.load('settings', {
-            spreadsheetId: '',
-            apiKey: '',
-            lastSync: null
-        });
+        try {
+            const prefixedKey = APP_CONFIG.STORAGE_PREFIX + 'settings';
+            const data = localStorage.getItem(prefixedKey);
+            return data ? JSON.parse(data) : {
+                spreadsheetId: '',
+                apiKey: '',
+                webAppUrl: ''
+            };
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            return {
+                spreadsheetId: '',
+                apiKey: '',
+                webAppUrl: ''
+            };
+        }
     },
 
-    // Save settings
+    // Save settings to localStorage (settings remain local)
     saveSettings(settings) {
-        return this.save('settings', settings);
+        try {
+            const prefixedKey = APP_CONFIG.STORAGE_PREFIX + 'settings';
+            localStorage.setItem(prefixedKey, JSON.stringify(settings));
+            return true;
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            return false;
+        }
     }
 };
 

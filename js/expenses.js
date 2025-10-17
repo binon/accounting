@@ -3,8 +3,8 @@ const Expenses = {
     expensesList: [],
 
     // Initialize
-    init() {
-        this.expensesList = Storage.getExpenses();
+    async init() {
+        this.expensesList = await Storage.getExpenses();
         this.setupEventListeners();
         this.render();
     },
@@ -84,37 +84,37 @@ const Expenses = {
     },
 
     // Add expense
-    add(expense) {
+    async add(expense) {
         this.expensesList.push(expense);
-        this.save();
+        await this.save();
         this.render();
-        Dashboard.refresh();
+        await Dashboard.refresh();
     },
 
     // Update expense
-    update(expense) {
+    async update(expense) {
         const index = this.expensesList.findIndex(e => e.id === expense.id);
         if (index !== -1) {
             this.expensesList[index] = expense;
-            this.save();
+            await this.save();
             this.render();
-            Dashboard.refresh();
+            await Dashboard.refresh();
         }
     },
 
     // Delete expense
-    delete(id) {
+    async delete(id) {
         if (confirm('Are you sure you want to delete this expense entry?')) {
             this.expensesList = this.expensesList.filter(e => e.id !== id);
-            this.save();
+            await this.save();
             this.render();
-            Dashboard.refresh();
+            await Dashboard.refresh();
         }
     },
 
     // Save to storage
-    save() {
-        Storage.saveExpenses(this.expensesList);
+    async save() {
+        await Storage.saveExpenses(this.expensesList);
     },
 
     // Render expenses list
